@@ -1,0 +1,86 @@
+Solution | Uber Data Engineering interview will be 17X easier with these questions
+CTC= 31+ LPA
+
+1. Write SQL to find the top 3 drivers by average rating, only including drivers with more than 100 trips.
+
+For ease let's say more than 5 trips.
+use ISM_PRACTICE;
+
+CREATE TABLE drivers(
+	driver_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE trips (
+    trip_id INT PRIMARY KEY,
+    driver_id INT,
+    rating DECIMAL(2,1),
+    FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
+);
+
+INSERT INTO drivers (driver_id, name) VALUES
+(1, 'Alice'),
+(2, 'Bob'),
+(3, 'Charlie'),
+(4, 'Diana'),
+(5, 'Evan');
+
+INSERT INTO trips (trip_id, driver_id, rating) VALUES
+(1, 1, 4.8),
+(2, 1, 4.9),
+(3, 1, 5.0),
+(4, 1, 4.7),
+(5, 1, 4.8),
+
+(6, 2, 4.5),
+(7, 2, 4.6),
+(8, 2, 4.7),
+(9, 2, 4.8),
+(10, 2, 4.6),
+
+(11, 3, 4.2),
+(12, 3, 4.3),
+
+(16, 4, 5.0),
+(17, 4, 4.9),
+(18, 4, 4.8),
+
+(13, 5, 4.1),
+(14, 5, 4.0),
+(15, 5, 4.1),
+(19, 5, 4.9),
+(20, 5, 4.6),
+(21, 5, 5.0);
+
+Select * from drivers;
+Select * from trips;
+
+Select top 3 
+d.driver_id,
+    d.name,
+    AVG(t.rating) AS avg_rating,
+    COUNT(t.trip_id) AS trip_count
+from drivers as d 
+JOIN trips as t ON t.driver_id = d.driver_id
+group by d.driver_id,  d.name
+having count(t.driver_id) >= 5
+order by  avg(t.rating) Desc;
+
+-----------------------------------------------------------------------------------------------------
+2. Find users who booked a ride more than once within a 10-minute window (self-join or window functions).
+3. Given a rides table, find the most frequently traveled route in the past 30 days.
+4. Write an efficient query to detect duplicates based on customer ID and timestamp but only return the latest one.
+5. Find the difference in trip counts between two consecutive weeks for each driver.
+
+6. Given a stream of integers, design a data structure to return the median at any time.
+7. Detect a cycle in a directed graph representing trip routes between cities.
+8. Merge K sorted linked lists.
+9. Implement an LRU (Least Recently Used) cache.
+10. Given a list of ride timestamps, find the longest continuous ride streak.
+
+11, Design a distributed pipeline to detect ride anomalies in real time using stream processing.
+12. How would you scale a pipeline that ingests 100M GPS events per day and serves analytics queries under 1s?
+13. Design a versioned schema system for your data warehouse to handle backward-incompatible changes.
+
+14.How would you implement exactly-once delivery in a Kafka + Spark Structured Streaming setup?
+15. Explain your approach to handling late-arriving data in a real-time processing pipeline (with watermarks, state cleanup, etc.).
