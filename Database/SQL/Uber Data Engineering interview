@@ -68,6 +68,48 @@ order by  avg(t.rating) Desc;
 
 -----------------------------------------------------------------------------------------------------
 2. Find users who booked a ride more than once within a 10-minute window (self-join or window functions).
+CREATE TABLE rides (
+    ride_id INT PRIMARY KEY,
+    user_id INT,
+    booking_time DATETIME
+);
+
+INSERT INTO rides (ride_id, user_id, booking_time) VALUES
+(1, 101, '2024-06-01 08:00:00'),  -- User 101
+(2, 101, '2024-06-01 08:05:00'),  -- User 101, 5 min later (should match)
+(3, 101, '2024-06-01 09:00:00'),  -- User 101, 55 min later (no match)
+(4, 102, '2024-06-01 10:00:00'),  -- User 102
+(5, 102, '2024-06-01 10:12:00'),  -- User 102, 12 min later (no match)
+(6, 103, '2024-06-01 11:00:00'),  -- User 103
+(7, 103, '2024-06-01 11:08:00'),  -- User 103, 8 min later (should match)
+(8, 104, '2024-06-01 12:00:00'),  -- User 104
+(9, 104, '2024-06-01 13:00:00');  -- User 104, 1 hour later (no match)
+
+---Sub Query
+SELECT
+    user_id,
+    time_diff
+FROM (
+    SELECT
+        user_id,
+        booking_time,
+        LAG(booking_time) OVER (PARTITION BY user_id ORDER BY booking_time) AS prev_date,
+        DATEDIFF(MINUTE, LAG(booking_time) OVER (PARTITION BY user_id ORDER BY booking_time), booking_time) AS time_diff
+    FROM rides
+) t
+WHERE time_diff IS NOT NULL AND time_diff <= 10;
+
+-- Self join
+SELECT
+    r1.user_id,
+    r1.booking_time AS booking_time,
+    r2.booking_time AS prev_date,
+    DATEDIFF(MINUTE, r2.booking_time, r1.booking_time) AS time_diff
+FROM rides r1
+JOIN rides r2
+    ON r1.user_id = r2.user_id
+    AND r1.booking_time > r2.booking_time
+    AND DATEDIFF(MINUTE, r2.booking_time, r1.booking_time) <= 10
 3. Given a rides table, find the most frequently traveled route in the past 30 days.
 4. Write an efficient query to detect duplicates based on customer ID and timestamp but only return the latest one.
 5. Find the difference in trip counts between two consecutive weeks for each driver.
